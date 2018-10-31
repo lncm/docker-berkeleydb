@@ -1,0 +1,16 @@
+sudo: required
+
+dist: xenial
+
+services:
+  - docker
+
+language: bash
+
+script:
+  - ./travis-build.sh
+  - >
+    if [ -n "$TRAVIS_TAG" ]; then
+      travis_retry timeout 5m echo "$DOCKER_PASS" | docker login -u="$DOCKER_USER" --password-stdin
+      ./travis-deploy.sh
+    fi
