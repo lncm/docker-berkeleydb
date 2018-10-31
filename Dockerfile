@@ -1,5 +1,5 @@
 # Build stage for BerkeleyDB
-FROM alpine
+FROM alpine as berkeleydb
 
 COPY qemu-* /usr/bin/
 
@@ -23,3 +23,8 @@ RUN ../dist/configure --enable-cxx --disable-shared --with-pic --prefix=${BERKEL
 RUN make -j4
 RUN make install
 RUN rm -rf ${BERKELEYDB_PREFIX}/docs
+
+
+FROM alpine
+
+COPY --from=berkeleydb /opt /opt
