@@ -14,5 +14,3 @@ docker run --rm --privileged multiarch/qemu-user-static:register
 sed -ie 's/FROM alpine/FROM arm32v6\/alpine/g' Dockerfile
 
 docker build --no-cache -t berkeleydb .
-
-docker run --rm berkeleydb cat /etc/alpine-release
