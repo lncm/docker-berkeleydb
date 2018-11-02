@@ -12,6 +12,7 @@ before_install:
   - >
     echo '{ "experimental": "enabled" }' > ~/.docker/config.json
   - sudo systemctl restart docker
+  - docker version
 
 install:
   - wget -N https://github.com/multiarch/qemu-user-static/releases/download/v3.0.0/x86_64_qemu-arm-static.tar.gz
