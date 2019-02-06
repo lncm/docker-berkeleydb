@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 
-image="meedamian/berkeleydb"
+image="lncm/berkeleydb"
+
 docker tag berkeleydb "$image:linux-arm-$TRAVIS_TAG"
 docker push "$image:linux-arm-$TRAVIS_TAG"
 
