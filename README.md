@@ -7,9 +7,9 @@ This is the base image for [lncm/bitcoind] images that rely on Berkeleydb versio
 Image is built for two architectures `arm` (on [Travis] using [`qemu`]), and `arm64` (on [Docker Hub]).
 
 [lncm/bitcoind]: https://github.com/lncm/docker-bitcoind/
-[Travis]: https://travis-ci.com/lncm/docker-berkeleydb/builds/99959318
+[Travis]: https://travis-ci.com/lncm/docker-berkeleydb/builds/100074314
 [`qemu`]: https://github.com/multiarch/qemu-user-static
-[Docker Hub]: https://cloud.docker.com/u/lncm/repository/registry-1.docker.io/lncm/berkeleydb/builds/5f079ed3-0961-4f32-ba75-e0a3e6ea107c
+[Docker Hub]: https://cloud.docker.com/u/lncm/repository/registry-1.docker.io/lncm/berkeleydb/builds/0060d943-df7f-45a4-9171-363df4e9f616
 
 ## Pull
 
