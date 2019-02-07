@@ -41,5 +41,8 @@ FROM alpine AS bitcoin-core
 
 # Copy all BDB relevant files to your new stage 
 COPY --from=berkeleydb /opt /opt
+
+# …
+# continue with your instructions here 
 ```
 
