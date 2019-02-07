@@ -27,6 +27,6 @@ RUN rm -rf ${BERKELEYDB_PREFIX}/docs
 
 FROM alpine
 
-LABEL maintainer="meeDamian (@meeDamian)"
+LABEL maintainer="Damian Mee (@meeDamian)"
 
 COPY --from=berkeleydb /opt /opt
