@@ -26,8 +26,8 @@ docker pull lncm/berkeleydb:db-4.8.30.NC
 To manually specify the architecture, use one of the commands below.
 
 ```bash
-docker pull lncm/berkeleydb:linux-arm-db-4.8.30.NC
-docker pull lncm/berkeleydb:linux-amd64-db-4.8.30.NC
+docker pull lncm/berkeleydb:db-4.8.30.NC-linux-arm
+docker pull lncm/berkeleydb:db-4.8.30.NC-linux-amd64
 ```
 
 ## Dockerfile
