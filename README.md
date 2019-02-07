@@ -1,5 +1,7 @@
 # docker-berkeleydb
 
+[![Build Status](https://travis-ci.com/lncm/docker-berkeleydb.svg?branch=db-4.8.30.NC)](https://travis-ci.com/lncm/docker-berkeleydb) ![](https://img.shields.io/microbadger/image-size/lncm/berkeleydb/db-4.8.30.NC.svg?style=flat) ![](https://img.shields.io/docker/pulls/lncm/berkeleydb.svg?style=flat)
+
 This is the base image for [lncm/bitcoind] images that rely on Berkeleydb version `db-4.8.30.NC`.
 
 Image is built for two architectures `arm` (on [Travis] using [`qemu`]), and `arm64` (on [Docker Hub]).
