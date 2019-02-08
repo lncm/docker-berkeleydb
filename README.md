@@ -35,14 +35,11 @@ docker pull lncm/berkeleydb:db-4.8.30.NC-linux-amd64
 To build bitcoind w/o the need to rebuild Berkeleydb, you can do:
 
 ```dockerfile
-# Pull already build Berkeley DB stage
-FROM lncm/berkeleydb:db-4.8.30.NC AS berkeleydb
+# Start new stage to build _something_
+FROM alpine AS something
 
-# Start new stage to build ex. bitocin-core
-FROM alpine AS bitcoin-core
-
-# Copy all BDB relevant files to your new stage 
-COPY --from=berkeleydb /opt /opt
+# Copy all BDB relevant files to your stage
+COPY --from=lncm/berkeleydb:db-4.8.30.NC /opt /opt
 
 # …
 # continue with your instructions here 
