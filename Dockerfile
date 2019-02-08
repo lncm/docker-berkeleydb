@@ -1,5 +1,5 @@
 # Build stage for BerkeleyDB
-FROM alpine as berkeleydb
+FROM alpine:3.9 as berkeleydb
 
 COPY qemu-* /usr/bin/
 
@@ -25,7 +25,7 @@ RUN make install
 RUN rm -rf ${BERKELEYDB_PREFIX}/docs
 
 
-FROM alpine
+FROM alpine:3.9
 
 LABEL maintainer="Damian Mee (@meeDamian)"
 
