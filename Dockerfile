@@ -2,11 +2,11 @@
 FROM alpine:3.10 as berkeleydb
 
 RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories && \
-    apk update && \
-    apk add autoconf \
-            automake \
-            build-base \
-            libressl
+    apk add --no-cache --update \
+        autoconf \
+        automake \
+        build-base \
+        libressl
 
 ENV BDB_VERSION=db-4.8.30.NC
 ENV BDB_PREFIX=/opt/${BDB_VERSION}
