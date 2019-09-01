@@ -1,32 +1,34 @@
 # Build stage for BerkeleyDB
-FROM alpine:3.9 as berkeleydb
+FROM alpine:3.10 as berkeleydb
 
-COPY qemu-* /usr/bin/
+RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories && \
+    apk update && \
+    apk add autoconf \
+            automake \
+            build-base \
+            libressl
 
-RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories
-RUN apk --no-cache add autoconf
-RUN apk --no-cache add automake
-RUN apk --no-cache add build-base
-RUN apk --no-cache add libressl
+ENV BDB_VERSION=db-4.8.30.NC
+ENV BDB_PREFIX=/opt/${BDB_VERSION}
 
-ENV BERKELEYDB_VERSION=db-4.8.30.NC
-ENV BERKELEYDB_PREFIX=/opt/${BERKELEYDB_VERSION}
+# Download, verify checksum, and uncompress BerkeleyDB source code
+RUN wget https://download.oracle.com/berkeley-db/${BDB_VERSION}.tar.gz && \
+    echo "12edc0df75bf9abd7f82f821795bcee50f42cb2e5f76a6a281b85732798364ef  ${BDB_VERSION}.tar.gz" | sha256sum -c && \
+    tar -xzf "${BDB_VERSION}.tar.gz"
 
-RUN wget https://download.oracle.com/berkeley-db/${BERKELEYDB_VERSION}.tar.gz
-RUN tar -xzf *.tar.gz
-RUN sed s/__atomic_compare_exchange/__atomic_compare_exchange_db/g -i ${BERKELEYDB_VERSION}/dbinc/atomic.h
-RUN mkdir -p ${BERKELEYDB_PREFIX}
+RUN sed s/__atomic_compare_exchange/__atomic_compare_exchange_db/g -i ${BDB_VERSION}/dbinc/atomic.h
+RUN mkdir -p ${BDB_PREFIX}
 
-WORKDIR /${BERKELEYDB_VERSION}/build_unix
+WORKDIR /${BDB_VERSION}/build_unix
 
-RUN ../dist/configure --enable-cxx --disable-shared --with-pic --prefix=${BERKELEYDB_PREFIX}
+RUN ../dist/configure --enable-cxx --disable-shared --with-pic --prefix=${BDB_PREFIX}
 RUN make -j4
 RUN make install
-RUN rm -rf ${BERKELEYDB_PREFIX}/docs
+RUN rm -rf ${BDB_PREFIX}/docs
 
 
-FROM alpine:3.9
+FROM alpine:3.10
 
 LABEL maintainer="Damian Mee (@meeDamian)"
 
-COPY --from=berkeleydb /opt /opt
+COPY --from=berkeleydb /opt /
