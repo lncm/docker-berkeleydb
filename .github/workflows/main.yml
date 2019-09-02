@@ -52,11 +52,13 @@ jobs:
       - name: Tag, and push
         run: |
           DOCKER_SLUG=${GITHUB_REPOSITORY/docker-}
-          TAG="${DOCKER_SLUG,,}:db-4.8.30.NC-linux-${{ matrix.arch }}-${GITHUB_SHA:0:7}"
+          TAG="${DOCKER_SLUG,,}:${{ matrix.arch }}-${GITHUB_SHA:0:16}"
 
           docker tag berkeleydb ${TAG}
           docker push ${TAG}
 
+
+  # TODO: only do that on tag
   manifest:
     name: Aggregate all images under one manifest
     runs-on: ubuntu-latest
@@ -76,25 +78,25 @@ jobs:
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PASS }}" | docker login -u="${GITHUB_ACTOR,,}" --password-stdin
 
-      - name: Pull all images
+      - name: Process all images
         run: |
           DOCKER_SLUG=${GITHUB_REPOSITORY/docker-}
 
           ARCHS=(arm aarch64 amd64)
 
           for arch in ${ARCHS[@]}; do
-            TAG="${DOCKER_SLUG,,}:db-4.8.30.NC-linux-${arch}-${GITHUB_SHA:0:7}"
+            TAG="${DOCKER_SLUG,,}:${arch}-${GITHUB_SHA:0:16}"
             docker pull "${TAG}"
 
-            docker tag "${TAG}" "${DOCKER_SLUG,,}:db-4.8.30.NC-linux-${arch}"
-            docker push "${DOCKER_SLUG,,}:db-4.8.30.NC-linux-${arch}"
+            docker tag "${TAG}" "${DOCKER_SLUG,,}:db-4.8.30.NC-${arch}"
+            docker push "${DOCKER_SLUG,,}:db-4.8.30.NC-${arch}"
           done
 
           PREFIX="${DOCKER_SLUG,,}:db-4.8.30.NC"
 
-          docker -D manifest create "${PREFIX}" "${ARCHS[@]/#/${PREFIX}-linux-}"
+          docker -D manifest create "${PREFIX}" "${ARCHS[@]/#/${PREFIX}-}"
 
-          docker manifest annotate "${PREFIX}" "${PREFIX}-linux-arm" --os linux --arch arm --variant v7
-          docker manifest annotate "${PREFIX}" "${PREFIX}-linux-aarch64" --os linux --arch arm64 --variant v8
+          docker manifest annotate "${PREFIX}" "${PREFIX}-arm"     --os linux --arch arm   --variant v7
+          docker manifest annotate "${PREFIX}" "${PREFIX}-aarch64" --os linux --arch arm64 --variant v8
 
           docker manifest push "${PREFIX}"
