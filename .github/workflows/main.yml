@@ -49,13 +49,12 @@ jobs:
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PASS }}" | docker login -u="${GITHUB_ACTOR,,}" --password-stdin
 
-      - name: Tag, and push
+      - name: Tag and push
         run: |
-          DOCKER_SLUG=${GITHUB_REPOSITORY/docker-}
-          TAG="${DOCKER_SLUG,,}:${{ matrix.arch }}-${GITHUB_SHA:0:16}"
+          SLUG=$(echo ${GITHUB_REPOSITORY,,} | sed 's/docker-//')
 
-          docker tag berkeleydb ${TAG}
-          docker push ${TAG}
+          docker tag berkeleydb "${SLUG}:${{ matrix.arch }}-${GITHUB_SHA:0:16}"
+          docker push "${SLUG}:${{ matrix.arch }}-${GITHUB_SHA:0:16}"
 
 
   # TODO: only do that on tag
@@ -78,25 +77,22 @@ jobs:
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PASS }}" | docker login -u="${GITHUB_ACTOR,,}" --password-stdin
 
-      - name: Process all images
+      - name: Pull and create manifest
         run: |
-          DOCKER_SLUG=${GITHUB_REPOSITORY/docker-}
+          SLUG=$(echo ${GITHUB_REPOSITORY,,} | sed 's/docker-//')
 
           ARCHS=(arm aarch64 amd64)
 
           for arch in ${ARCHS[@]}; do
-            TAG="${DOCKER_SLUG,,}:${arch}-${GITHUB_SHA:0:16}"
-            docker pull "${TAG}"
+            docker pull "${SLUG}:${arch}-${GITHUB_SHA:0:16}"
 
-            docker tag "${TAG}" "${DOCKER_SLUG,,}:db-4.8.30.NC-${arch}"
-            docker push "${DOCKER_SLUG,,}:db-4.8.30.NC-${arch}"
+            docker tag  "${SLUG}:${arch}-${GITHUB_SHA:0:16}"  "${SLUG}:db-4.8.30.NC-${arch}"
+            docker push "${SLUG}:db-4.8.30.NC-${arch}"
           done
 
-          PREFIX="${DOCKER_SLUG,,}:db-4.8.30.NC"
+          docker -D manifest create  "${SLUG}:db-4.8.30.NC"  "${ARCHS[@]/#/${SLUG}:db-4.8.30.NC-}"
 
-          docker -D manifest create "${PREFIX}" "${ARCHS[@]/#/${PREFIX}-}"
+          docker manifest annotate "${SLUG}:db-4.8.30.NC" "${SLUG}:db-4.8.30.NC-arm"     --os linux --arch arm   --variant v7
+          docker manifest annotate "${SLUG}:db-4.8.30.NC" "${SLUG}:db-4.8.30.NC-aarch64" --os linux --arch arm64 --variant v8
 
-          docker manifest annotate "${PREFIX}" "${PREFIX}-arm"     --os linux --arch arm   --variant v7
-          docker manifest annotate "${PREFIX}" "${PREFIX}-aarch64" --os linux --arch arm64 --variant v8
-
-          docker manifest push "${PREFIX}"
+          docker manifest push "${SLUG}:db-4.8.30.NC"
