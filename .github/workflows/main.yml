@@ -10,7 +10,7 @@ on: [push]
 jobs:
   build:
     name: Build BerkeleyDB
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     strategy:
       matrix:
         arch:
@@ -60,7 +60,7 @@ jobs:
   # TODO: only do that on tag
   manifest:
     name: Aggregate all images under one manifest
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     needs: build
 
     steps:
