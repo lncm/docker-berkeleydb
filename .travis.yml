@@ -15,7 +15,6 @@ before_install:
   - docker version
 
 before_script:
-#  - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
   - docker run --rm --privileged meedamian/simple-qemu:v4.1.0 -p yes
   - sed -ie 's/FROM alpine/FROM arm32v6\/alpine/g' Dockerfile
 
