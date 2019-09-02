@@ -51,7 +51,8 @@ jobs:
 
       - name: Tag, and push
         run: |
-          FULL_TAG="${GITHUB_REPOSITORY,,}:db-4.8.30.NC-${{ matrix.arch }}-${GITHUB_SHA:0:7}"
+          DOCKER_SLUG=${GITHUB_REPOSITORY/docker-}
+          FULL_TAG="${DOCKER_SLUG,,}:db-4.8.30.NC-${{ matrix.arch }}-${GITHUB_SHA:0:7}"
 
           docker tag berkeleydb ${FULL_TAG}
           docker push ${FULL_TAG}
