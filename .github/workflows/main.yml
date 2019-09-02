@@ -15,7 +15,6 @@ jobs:
       matrix:
         arch:
           - arm
-          - arm2
           - aarch64
           - amd64
         qemu:
