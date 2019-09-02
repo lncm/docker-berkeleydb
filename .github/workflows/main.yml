@@ -21,13 +21,6 @@ jobs:
     steps:
       - uses: actions/checkout@v1.0.0
 
-      - name: print things
-        run: |
-          echo 1 ${{ github.ref }}
-          echo 2 ${GITHUB_REF}
-          echo 3 ${{ matrix.arch }}
-          echo 4 ${MATRIX_ARCH}
-
       - name: Register self-compiled qemu
         if: matrix.arch != 'amd64'
         run: docker run --rm --privileged meedamian/simple-qemu:v4.1.0-${{matrix.arch}} -p yes
@@ -36,12 +29,12 @@ jobs:
         if: matrix.arch != 'amd64'
         run: |
           if [[ "${{ matrix.arch }}" == "aarch64" ]]; then
-            sed -ie 's/FROM alpine/FROM arm64v8\/alpine/g' 0.16/Dockerfile
+            sed -ie 's/FROM alpine/FROM arm64v8\/alpine/g' Dockerfile
             exit 0
           fi
 
           if [[ "${{ matrix.arch }}" == "arm" ]]; then
-            sed -ie "s/FROM alpine/FROM arm32v7\/alpine/g" 0.16/Dockerfile
+            sed -ie "s/FROM alpine/FROM arm32v7\/alpine/g" Dockerfile
             exit 0
           fi
 
