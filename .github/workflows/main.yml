@@ -15,6 +15,7 @@ jobs:
       matrix:
         arch:
           - arm
+          - arm2
           - aarch64
           - amd64
 
@@ -23,7 +24,13 @@ jobs:
 
       - name: Register self-compiled qemu
         if: matrix.arch != 'amd64'
-        run: docker run --rm --privileged meedamian/simple-qemu:v4.1.0-${{matrix.arch}} -p yes
+        run: |
+          if [[ "${{ matrix.arch }}" == "arm2" ]]; then
+            docker run --rm --privileged multiarch/qemu-user-static:${{matrix.arch}}-4.1.0-1  -p yes
+            exit 0
+          fi
+
+          docker run --rm --privileged meedamian/simple-qemu:v4.1.0-${{matrix.arch}} -p yes
 
       - name: Alter Dockerfile to be arch-specific
         if: matrix.arch != 'amd64'
@@ -33,7 +40,7 @@ jobs:
             exit 0
           fi
 
-          if [[ "${{ matrix.arch }}" == "arm" ]]; then
+          if [[ "${{ matrix.arch }}" == arm* ]]; then
             sed -ie "s/FROM alpine/FROM arm32v7\/alpine/g" Dockerfile
             exit 0
           fi
