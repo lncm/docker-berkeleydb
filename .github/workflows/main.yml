@@ -14,8 +14,8 @@ jobs:
     strategy:
       matrix:
         arch:
-          - arm
-          - aarch64
+          - arm32v7
+          - arm64v8
           - amd64
 
     steps:
@@ -27,18 +27,7 @@ jobs:
 
       - name: Alter Dockerfile to be arch-specific
         if: matrix.arch != 'amd64'
-        run: |
-          if [[ "${{ matrix.arch }}" == "aarch64" ]]; then
-            sed -ie 's/FROM alpine/FROM arm64v8\/alpine/g' Dockerfile
-            exit 0
-          fi
-
-          if [[ "${{ matrix.arch }}" == "arm" ]]; then
-            sed -ie "s/FROM alpine/FROM arm32v7\/alpine/g" Dockerfile
-            exit 0
-          fi
-
-          exit 1
+        run: sed -ie "s/FROM alpine/FROM ${{ matrix.arch }}\/alpine/g" Dockerfile
 
       - name: Build Berkeleydb stage
         run: >
@@ -81,7 +70,7 @@ jobs:
         run: |
           SLUG=$(echo ${GITHUB_REPOSITORY,,} | sed 's/docker-//')
 
-          ARCHS=(arm aarch64 amd64)
+          ARCHS=(arm32v7 arm64v8 amd64)
 
           for arch in ${ARCHS[@]}; do
             docker pull "${SLUG}:${arch}-${GITHUB_SHA:0:16}"
@@ -92,8 +81,8 @@ jobs:
 
           docker -D manifest create  "${SLUG}:db-4.8.30.NC"  "${ARCHS[@]/#/${SLUG}:db-4.8.30.NC-}"
 
-          docker manifest annotate "${SLUG}:db-4.8.30.NC" "${SLUG}:db-4.8.30.NC-arm"     --os linux --arch arm   --variant v7
-          docker manifest annotate "${SLUG}:db-4.8.30.NC" "${SLUG}:db-4.8.30.NC-aarch64" --os linux --arch arm64 --variant v8
+          docker manifest annotate "${SLUG}:db-4.8.30.NC" "${SLUG}:db-4.8.30.NC-arm32v7" --os linux --arch arm   --variant v7
+          docker manifest annotate "${SLUG}:db-4.8.30.NC" "${SLUG}:db-4.8.30.NC-arm64v8" --os linux --arch arm64 --variant v8
 
           docker manifest push "${SLUG}:db-4.8.30.NC"
 
