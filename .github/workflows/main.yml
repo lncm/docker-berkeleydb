@@ -18,6 +18,9 @@ jobs:
           - arm2
           - aarch64
           - amd64
+        qemu:
+          - simple
+          - multiarch
 
     steps:
       - uses: actions/checkout@v1.0.0
@@ -25,8 +28,8 @@ jobs:
       - name: Register self-compiled qemu
         if: matrix.arch != 'amd64'
         run: |
-          if [[ "${{ matrix.arch }}" == "arm2" ]]; then
-            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          if [[ "${{ matrix.qemu }}" == "multiarch" ]]; then
+            docker run --rm --privileged multiarch/qemu-user-static -p yes
             exit 0
           fi
 
@@ -40,7 +43,7 @@ jobs:
             exit 0
           fi
 
-          if [[ "${{ matrix.arch }}" == arm* ]]; then
+          if [[ "${{ matrix.arch }}" == "arm" ]]; then
             sed -ie "s/FROM alpine/FROM arm32v7\/alpine/g" Dockerfile
             exit 0
           fi
@@ -48,18 +51,21 @@ jobs:
           exit 1
 
       - name: Build Berkeleydb stage
+        if: matrix.arch != 'amd64' || matrix.qemu != 'multiarch'
         run: >
           DOCKER_BUILDKIT=1 docker build .
           --tag   berkeleydb
           --file  Dockerfile
 
       - name: Login to Docker Hub
+        if: matrix.arch != 'amd64' || matrix.qemu != 'multiarch'
         run: echo "${{ secrets.DOCKER_PASS }}" | docker login -u="${GITHUB_ACTOR,,}" --password-stdin
 
       - name: Tag, and push
+        if: matrix.arch != 'amd64' || matrix.qemu != 'multiarch'
         run: |
           DOCKER_SLUG=${GITHUB_REPOSITORY/docker-}
-          FULL_TAG="${DOCKER_SLUG,,}:db-4.8.30.NC-${{ matrix.arch }}-${GITHUB_SHA:0:7}"
+          FULL_TAG="${DOCKER_SLUG,,}:db-4.8.30.NC-${{ matrix.arch }}-${{ matrix.qemu }}-${GITHUB_SHA:0:7}"
 
           docker tag berkeleydb ${FULL_TAG}
           docker push ${FULL_TAG}
