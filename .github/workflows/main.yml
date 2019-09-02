@@ -17,22 +17,13 @@ jobs:
           - arm
           - aarch64
           - amd64
-        qemu:
-          - simple
-          - multiarch
 
     steps:
       - uses: actions/checkout@v1.0.0
 
       - name: Register self-compiled qemu
         if: matrix.arch != 'amd64'
-        run: |
-          if [[ "${{ matrix.qemu }}" == "multiarch" ]]; then
-            docker run --rm --privileged multiarch/qemu-user-static -p yes
-            exit 0
-          fi
-
-          docker run --rm --privileged meedamian/simple-qemu:v4.1.0-${{matrix.arch}} -p yes
+        run: docker run --rm --privileged meedamian/simple-qemu:v4.1.0-${{matrix.arch}} -p yes
 
       - name: Alter Dockerfile to be arch-specific
         if: matrix.arch != 'amd64'
@@ -50,24 +41,21 @@ jobs:
           exit 1
 
       - name: Build Berkeleydb stage
-        if: matrix.arch != 'amd64' || matrix.qemu != 'multiarch'
         run: >
           DOCKER_BUILDKIT=1 docker build .
           --tag   berkeleydb
           --file  Dockerfile
 
       - name: Login to Docker Hub
-        if: matrix.arch != 'amd64' || matrix.qemu != 'multiarch'
         run: echo "${{ secrets.DOCKER_PASS }}" | docker login -u="${GITHUB_ACTOR,,}" --password-stdin
 
       - name: Tag, and push
-        if: matrix.arch != 'amd64' || matrix.qemu != 'multiarch'
         run: |
           DOCKER_SLUG=${GITHUB_REPOSITORY/docker-}
-          FULL_TAG="${DOCKER_SLUG,,}:db-4.8.30.NC-${{ matrix.arch }}-${{ matrix.qemu }}-${GITHUB_SHA:0:7}"
+          TAG="${DOCKER_SLUG,,}:db-4.8.30.NC-linux-${{ matrix.arch }}-${GITHUB_SHA:0:7}"
 
-          docker tag berkeleydb ${FULL_TAG}
-          docker push ${FULL_TAG}
+          docker tag berkeleydb ${TAG}
+          docker push ${TAG}
 
   manifest:
     name: Aggregate all images under one manifest
@@ -77,4 +65,36 @@ jobs:
     steps:
       - uses: actions/checkout@v1.0.0
 
-      - run: docker version
+      - name: Enable manifests
+        run: |
+          mkdir -p ~/.docker
+
+          echo '{ "experimental": "enabled" }' > ~/.docker/config.json
+          sudo systemctl restart docker
+          docker version
+
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASS }}" | docker login -u="${GITHUB_ACTOR,,}" --password-stdin
+
+      - name: Pull all images
+        run: |
+          DOCKER_SLUG=${GITHUB_REPOSITORY/docker-}
+
+          ARCHS=(arm aarch64 amd64)
+
+          for arch in ${ARCHS[@]}; do
+            TAG="${DOCKER_SLUG,,}:db-4.8.30.NC-linux-${arch}-${GITHUB_SHA:0:7}"
+            docker pull "${TAG}"
+
+            docker tag "${TAG}" "${DOCKER_SLUG,,}:db-4.8.30.NC-linux-${arch}"
+            docker push "${DOCKER_SLUG,,}:db-4.8.30.NC-linux-${arch}"
+          done
+
+          PREFIX="${DOCKER_SLUG,,}:db-4.8.30.NC"
+
+          docker -D manifest create "${PREFIX}" "${ARCHS[@]/#/${PREFIX}-linux-}"
+
+          docker manifest annotate "${PREFIX}" "${PREFIX}-linux-arm" --os linux --arch arm --variant v7
+          docker manifest annotate "${PREFIX}" "${PREFIX}-linux-aarch64" --os linux --arch arm64 --variant v8
+
+          docker manifest push "${PREFIX}"
