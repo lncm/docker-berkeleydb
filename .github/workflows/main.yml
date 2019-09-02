@@ -96,3 +96,9 @@ jobs:
           docker manifest annotate "${SLUG}:db-4.8.30.NC" "${SLUG}:db-4.8.30.NC-aarch64" --os linux --arch arm64 --variant v8
 
           docker manifest push "${SLUG}:db-4.8.30.NC"
+
+      - name: Sync README.md with Docker Hub
+        uses: meeDamian/sync-readme@v1.0.5
+        with:
+          pass: ${{ secrets.DOCKER_PASS }}
+          description: true
