@@ -90,4 +90,3 @@ jobs:
         uses: meeDamian/sync-readme@v1.0.5
         with:
           pass: ${{ secrets.DOCKER_PASS }}
-          description: true
