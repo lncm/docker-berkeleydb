@@ -90,3 +90,5 @@ jobs:
         uses: meeDamian/sync-readme@v1.0.5
         with:
           pass: ${{ secrets.DOCKER_PASS }}
+          slug: ${GITHUB_REPOSITORY/docker-}
+          description: true
