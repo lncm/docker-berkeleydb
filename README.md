@@ -1,6 +1,7 @@
 # docker-berkeleydb
 
-[![Build Status](https://github.com/meeDamian/docker-berkeleydb/workflows/Build%20BerkeleyDB/badge.svg)](https://github.com/meeDamian/docker-berkeleydb/actions) ![](https://img.shields.io/microbadger/image-size/lncm/berkeleydb/db-4.8.30.NC.svg?style=flat) ![](https://img.shields.io/docker/pulls/lncm/berkeleydb.svg?style=flat) ![Tippin.me donation](https://img.shields.io/badge/donate-lightning-FDD023?logo=bitcoin&style=flat&link=https://tippin.me/@meeDamian)
+[![Build Status](https://github.com/meeDamian/docker-berkeleydb/workflows/Build%20BerkeleyDB/badge.svg)](https://github.com/meeDamian/docker-berkeleydb/actions) ![](https://img.shields.io/microbadger/image-size/lncm/berkeleydb/db-4.8.30.NC.svg?style=flat) ![](https://img.shields.io/docker/pulls/lncm/berkeleydb.svg?style=flat) [![Tippin.me donation](https://img.shields.io/badge/donate-lightning-FDD023?logo=bitcoin&style=flat)](https://tippin.me/@meeDamian)
+
 
 This is the base image for [lncm/bitcoind] Docker images that rely on Berkeleydb version `db-4.8.30.NC`.  This stage is separated from the main bitcoind build process for two reasons:
 
