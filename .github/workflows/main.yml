@@ -87,7 +87,7 @@ jobs:
           docker -D manifest create  "${SLUG}:db-4.8.30.NC"  "${ARCHS[@]/#/${SLUG}:db-4.8.30.NC-}"
 
           docker manifest annotate "${SLUG}:db-4.8.30.NC" "${SLUG}:db-4.8.30.NC-arm32v7" --os linux --arch arm   --variant v7
-          docker manifest annotate "${SLUG}:db-4.8.30.NC" "${SLUG}:db-4.8.30.NC-arm64v8" --os linux --arch arm64 --variant v8
+          docker manifest annotate "${SLUG}:db-4.8.30.NC" "${SLUG}:db-4.8.30.NC-arm64"   --os linux --arch arm64 --variant v8
 
           docker manifest push "${SLUG}:db-4.8.30.NC"
 
