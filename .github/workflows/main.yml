@@ -1,7 +1,5 @@
 name: Build BerkeleyDB
 
-#on: [push]
-
 on:
   push:
     tags:
@@ -49,8 +47,8 @@ jobs:
         run: |
           SLUG=$(echo ${GITHUB_REPOSITORY,,} | sed 's/docker-//')
 
-          docker tag berkeleydb "${SLUG}:${{ matrix.arch }}-${GITHUB_SHA:0:16}"
-          docker push "${SLUG}:${{ matrix.arch }}-${GITHUB_SHA:0:16}"
+          docker tag berkeleydb "${SLUG}:${{matrix.arch}}-${GITHUB_SHA:0:16}"
+          docker push "${SLUG}:${{matrix.arch}}-${GITHUB_SHA:0:16}"
 
 
   manifest:
@@ -76,7 +74,7 @@ jobs:
         run: |
           SLUG=$(echo ${GITHUB_REPOSITORY,,} | sed 's/docker-//')
 
-          ARCHS=(arm32v7 arm64v8 amd64)
+          ARCHS=(arm32v7 arm64 amd64)
 
           for arch in ${ARCHS[@]}; do
             docker pull "${SLUG}:${arch}-${GITHUB_SHA:0:16}"
@@ -97,6 +95,6 @@ jobs:
       - name: Sync README.md with Docker Hub
         uses: meeDamian/sync-readme@v1.0.5
         with:
-          pass: ${{ secrets.DOCKER_PASS }}
+          pass: ${{secrets.DOCKER_PASS}}
           slug: meedamian/berkeleydb
           description: true
