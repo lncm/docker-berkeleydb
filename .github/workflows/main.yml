@@ -15,7 +15,7 @@ jobs:
       matrix:
         arch:
           - arm32v7
-          - arm64v8
+          - arm64
           - amd64
 
     steps:
@@ -27,7 +27,14 @@ jobs:
 
       - name: Alter Dockerfile to be arch-specific
         if: matrix.arch != 'amd64'
-        run: sed -ie "s/FROM alpine/FROM ${{ matrix.arch }}\/alpine/g" Dockerfile
+        run: |
+          CPU=${{matrix.arch}}
+
+          if [[ "${CPU}" == "arm32v7" ]]; then
+            CPU="arm/v7"
+          fi
+
+          sed -ie "s|^FROM \(alpine.*\)$|FROM --platform=linux/$CPU \1|" Dockerfile
 
       - name: Build Berkeleydb stage
         run: >
@@ -46,7 +53,6 @@ jobs:
           docker push "${SLUG}:${{ matrix.arch }}-${GITHUB_SHA:0:16}"
 
 
-  # TODO: only do that on tag
   manifest:
     name: Aggregate all images under one manifest
     runs-on: ubuntu-18.04
