@@ -29,11 +29,11 @@ jobs:
         run: |
           CPU=${{matrix.arch}}
 
-          if [[ "${CPU}" == "arm32v7" ]]; then
-            CPU="arm/v7"
+          if [[ "${CPU}" == "arm64" ]]; then
+            CPU="arm64v8"
           fi
 
-          sed -ie "s|^FROM \(alpine.*\)$|FROM --platform=linux/$CPU \1|" Dockerfile
+          sed -ie "s|^FROM \(alpine.*\)$|FROM $CPU/\1|" Dockerfile
 
       - name: Build Berkeleydb stage
         run: >
