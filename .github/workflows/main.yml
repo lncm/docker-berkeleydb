@@ -1,0 +1,101 @@
+name: Build BerkeleyDB
+
+# Only triggered by git-tags, but the name of the tag is ignored, as only one BDB version is ever built
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    name: Build BerkeleyDB
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        arch:
+          - arm32v7
+          - arm64
+          - amd64
+
+    steps:
+      - uses: actions/checkout@v1.0.0
+
+      - name: Register self-compiled qemu
+        if: matrix.arch != 'amd64'
+        run: docker run --rm --privileged meedamian/simple-qemu:v4.1.0-${{matrix.arch}} -p yes
+
+      - name: Alter Dockerfile to be arch-specific
+        if: matrix.arch != 'amd64'
+        run: |
+          CPU=${{matrix.arch}}
+
+          if [[ "${CPU}" == "arm64" ]]; then
+            CPU="arm64v8"
+          fi
+
+          sed -ie "s|^FROM \(alpine.*\)$|FROM $CPU/\1|" Dockerfile
+
+      - name: Build Berkeleydb stage
+        run: >
+          DOCKER_BUILDKIT=1 docker build .
+          --tag   berkeleydb
+          --file  Dockerfile
+
+      - name: Login to Docker Hub
+        run: echo "${{secrets.DOCKER_PASS}}" | docker login -u="${GITHUB_ACTOR,,}" --password-stdin
+
+      - name: Tag and push
+        run: |
+          SLUG=$(echo ${GITHUB_REPOSITORY,,} | sed 's/docker-//')
+
+          docker tag berkeleydb "${SLUG}:${{matrix.arch}}-${GITHUB_SHA:0:16}"
+          docker push "${SLUG}:${{matrix.arch}}-${GITHUB_SHA:0:16}"
+
+
+  manifest:
+    name: Aggregate all images under one manifest
+    runs-on: ubuntu-18.04
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v1.0.0
+
+      - name: Enable manifests
+        run: |
+          mkdir -p ~/.docker
+
+          echo '{ "experimental": "enabled" }' > ~/.docker/config.json
+          sudo systemctl restart docker
+          docker version
+
+      - name: Login to Docker Hub
+        run: echo "${{secrets.DOCKER_PASS}}" | docker login -u="${GITHUB_ACTOR,,}" --password-stdin
+
+      - name: Pull and create manifest
+        run: |
+          SLUG=$(echo ${GITHUB_REPOSITORY,,} | sed 's/docker-//')
+
+          ARCHS=(arm32v7 arm64 amd64)
+
+          for arch in ${ARCHS[@]}; do
+            docker pull "${SLUG}:${arch}-${GITHUB_SHA:0:16}"
+
+            docker tag  "${SLUG}:${arch}-${GITHUB_SHA:0:16}"  "${SLUG}:db-4.8.30.NC-${arch}"
+            docker push "${SLUG}:db-4.8.30.NC-${arch}"
+          done
+
+          docker -D manifest create  "${SLUG}:db-4.8.30.NC"  "${ARCHS[@]/#/${SLUG}:db-4.8.30.NC-}"
+
+          docker manifest annotate "${SLUG}:db-4.8.30.NC" "${SLUG}:db-4.8.30.NC-arm32v7" --os linux --arch arm   --variant v7
+          docker manifest annotate "${SLUG}:db-4.8.30.NC" "${SLUG}:db-4.8.30.NC-arm64"   --os linux --arch arm64 --variant v8
+
+          docker manifest push "${SLUG}:db-4.8.30.NC"
+
+        # TODO: replace with sth more generic like: ${GITHUB_REPOSITORY/docker-} once a solution appears here:
+        # https://github.community/t5/GitHub-Actions/Pass-result-of-expression-to-custom-Github-Action-argument/m-p/30458
+      - name: Sync README.md with Docker Hub
+        uses: meeDamian/sync-readme@v1.0.5
+        with:
+          pass: ${{secrets.DOCKER_PASS}}
+          slug: lncm/berkeleydb
+          description: true
