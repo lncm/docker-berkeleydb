@@ -41,7 +41,7 @@ jobs:
           --file  Dockerfile
 
       - name: Login to Docker Hub
-        run: echo "${{ secrets.DOCKER_PASS }}" | docker login -u="${GITHUB_ACTOR,,}" --password-stdin
+        run: echo "${{secrets.DOCKER_PASS}}" | docker login -u="${GITHUB_ACTOR,,}" --password-stdin
 
       - name: Tag and push
         run: |
@@ -68,7 +68,7 @@ jobs:
           docker version
 
       - name: Login to Docker Hub
-        run: echo "${{ secrets.DOCKER_PASS }}" | docker login -u="${GITHUB_ACTOR,,}" --password-stdin
+        run: echo "${{secrets.DOCKER_PASS}}" | docker login -u="${GITHUB_ACTOR,,}" --password-stdin
 
       - name: Pull and create manifest
         run: |
