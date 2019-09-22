@@ -1,5 +1,6 @@
 name: Build BerkeleyDB
 
+# Only triggered by git-tags, but the name of the tag is ignored, as only one BDB version is ever built
 on:
   push:
     tags:
