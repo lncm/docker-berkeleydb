@@ -33,7 +33,8 @@ jobs:
             CPU="arm64v8"
           fi
 
-          sed -ie "s|^FROM \(alpine.*\)$|FROM $CPU/\1|" Dockerfile
+          sed -ie "s|^FROM alpine|FROM $CPU/alpine|g" Dockerfile
+          grep ^FROM Dockerfile
 
       - name: Build Berkeleydb stage
         run: >
