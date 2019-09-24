@@ -16,7 +16,7 @@ Images here are built for three architectures: `amd64`, `arm` , and `aarch64` (a
 
 ## Pull
 
-Pulling this image directly is only useful if you know exactly why you need it for, but can be achieved with:
+Pulling this image directly is only useful if you know exactly what you need it for, can be achieved with:
 
 ```bash
 docker pull lncm/berkeleydb:db-4.8.30.NC
