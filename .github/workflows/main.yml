@@ -70,7 +70,9 @@ jobs:
           docker version
 
       - name: Login to Docker Hub
-        run: echo "${{secrets.DOCKER_TOKEN}}" | docker login -u="${GITHUB_ACTOR,,}" --password-stdin
+        run: |
+          echo "Logging in as ${GITHUB_ACTOR,,}…"
+          echo "${{secrets.DOCKER_TOKEN}}" | docker login -u="${GITHUB_ACTOR,,}" --password-stdin
 
       - name: Pull and create manifest
         run: |
