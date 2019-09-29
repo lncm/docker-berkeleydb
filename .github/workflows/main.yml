@@ -105,8 +105,6 @@ jobs:
 
           docker manifest push "${SLUG}:${VERSION}"
 
-        # TODO: replace with sth more generic like: ${GITHUB_REPOSITORY/docker-} once a solution appears here:
-        # https://github.community/t5/GitHub-Actions/Pass-result-of-expression-to-custom-Github-Action-argument/m-p/30458
       - name: Sync README.md with Docker Hub
         uses: meeDamian/sync-readme@v1.0.5
         with:
