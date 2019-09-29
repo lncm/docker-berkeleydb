@@ -110,5 +110,5 @@ jobs:
         uses: meeDamian/sync-readme@v1.0.5
         with:
           pass: ${{secrets.DOCKER_TOKEN}}
-          slug: meedamian/berkeleydb
+          slug: lncm/berkeleydb
           description: true
