@@ -10,6 +10,9 @@ jobs:
   build:
     name: Build BerkeleyDB
     runs-on: ubuntu-18.04
+    env:
+      DOCKER_BUILDKIT: 1
+
     strategy:
       matrix:
         arch:
@@ -37,26 +40,30 @@ jobs:
           grep ^FROM Dockerfile
 
       - name: Build Berkeleydb stage
-        run: >
-          DOCKER_BUILDKIT=1 docker build .
-          --tag   berkeleydb
-          --file  Dockerfile
+        run: docker build .  --tag berkeleydb
+
+      - name: Setup environment
+        run: |
+          echo ::set-env name=DOCKER_USER::"${GITHUB_ACTOR,,}"
+          echo ::set-env name=COMMIT_HASH::"${GITHUB_SHA:0:16}"
+          echo ::set-env name=SLUG::"$(echo "${GITHUB_REPOSITORY,,}" | sed 's/docker-//')"
 
       - name: Login to Docker Hub
-        run: echo "${{secrets.DOCKER_PASS}}" | docker login -u="${GITHUB_ACTOR,,}" --password-stdin
+        run: echo "${{secrets.DOCKER_TOKEN}}" | docker login -u="${DOCKER_USER}" --password-stdin
 
-      - name: Tag and push
-        run: |
-          SLUG=$(echo ${GITHUB_REPOSITORY,,} | sed 's/docker-//')
+      - name: Tag image to be commit-specific
+        run: docker tag berkeleydb "${SLUG}:${{matrix.arch}}-${COMMIT_HASH}"
 
-          docker tag berkeleydb "${SLUG}:${{matrix.arch}}-${GITHUB_SHA:0:16}"
-          docker push "${SLUG}:${{matrix.arch}}-${GITHUB_SHA:0:16}"
+      - name: Push image to Docker
+        run: docker push "${SLUG}:${{matrix.arch}}-${COMMIT_HASH}"
 
 
   manifest:
     name: Aggregate all images under one manifest
     runs-on: ubuntu-18.04
     needs: build
+    env:
+      VERSION: db-4.8.30.NC
 
     steps:
       - uses: actions/checkout@v1.0.0
@@ -69,30 +76,34 @@ jobs:
           sudo systemctl restart docker
           docker version
 
+      - name: Setup environment
+        run: |
+          echo ::set-env name=DOCKER_USER::"${GITHUB_ACTOR,,}"
+          echo ::set-env name=COMMIT_HASH::"${GITHUB_SHA:0:16}"
+          echo ::set-env name=SLUG::"$(echo "${GITHUB_REPOSITORY,,}" | sed 's/docker-//')"
+
       - name: Login to Docker Hub
         run: |
-          echo "Logging in as ${GITHUB_ACTOR,,}…"
-          echo "${{secrets.DOCKER_TOKEN}}" | docker login -u="${GITHUB_ACTOR,,}" --password-stdin
+          echo "Logging in as ${DOCKER_USER}…"
+          echo "${{secrets.DOCKER_TOKEN}}" | docker login -u="${DOCKER_USER}" --password-stdin
 
       - name: Pull and create manifest
         run: |
-          SLUG=$(echo ${GITHUB_REPOSITORY,,} | sed 's/docker-//')
-
           ARCHS=(arm32v7 arm64 amd64)
 
           for arch in ${ARCHS[@]}; do
-            docker pull "${SLUG}:${arch}-${GITHUB_SHA:0:16}"
+            docker pull "${SLUG}:${arch}-${COMMIT_HASH}"
 
-            docker tag  "${SLUG}:${arch}-${GITHUB_SHA:0:16}"  "${SLUG}:db-4.8.30.NC-${arch}"
-            docker push "${SLUG}:db-4.8.30.NC-${arch}"
+            docker tag  "${SLUG}:${arch}-${COMMIT_HASH}"  "${SLUG}:${VERSION}-${arch}"
+            docker push "${SLUG}:${VERSION}-${arch}"
           done
 
-          docker -D manifest create  "${SLUG}:db-4.8.30.NC"  "${ARCHS[@]/#/${SLUG}:db-4.8.30.NC-}"
+          docker -D manifest create  "${SLUG}:${VERSION}"  "${ARCHS[@]/#/${SLUG}:${VERSION}-}"
 
-          docker manifest annotate "${SLUG}:db-4.8.30.NC" "${SLUG}:db-4.8.30.NC-arm32v7" --os linux --arch arm   --variant v7
-          docker manifest annotate "${SLUG}:db-4.8.30.NC" "${SLUG}:db-4.8.30.NC-arm64"   --os linux --arch arm64 --variant v8
+          docker manifest annotate "${SLUG}:${VERSION}" "${SLUG}:${VERSION}-arm32v7" --os linux --arch arm   --variant v7
+          docker manifest annotate "${SLUG}:${VERSION}" "${SLUG}:${VERSION}-arm64"   --os linux --arch arm64 --variant v8
 
-          docker manifest push "${SLUG}:db-4.8.30.NC"
+          docker manifest push "${SLUG}:${VERSION}"
 
         # TODO: replace with sth more generic like: ${GITHUB_REPOSITORY/docker-} once a solution appears here:
         # https://github.community/t5/GitHub-Actions/Pass-result-of-expression-to-custom-Github-Action-argument/m-p/30458
@@ -100,5 +111,5 @@ jobs:
         uses: meeDamian/sync-readme@v1.0.5
         with:
           pass: ${{secrets.DOCKER_TOKEN}}
-          slug: lncm/berkeleydb
+          slug: ${SLUG}
           description: true

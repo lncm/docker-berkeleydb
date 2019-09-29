@@ -5,7 +5,7 @@ ARG ALPINE_VERSION=3.10
 FROM alpine:${ALPINE_VERSION} as berkeleydb
 
 # Make sure packages are downloaded using HTTPS
-RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories && \
+RUN sed -i 's|http://dl-cdn.alpinelinux.org|https://alpine.global.ssl.fastly.net|g' /etc/apk/repositories && \
     apk add --no-cache --update \
         autoconf \
         automake \
