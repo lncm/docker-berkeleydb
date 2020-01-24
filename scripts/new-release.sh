@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+set -e
 
 # Verify there's no uncommitted changes in the working dir
 if [[ -n "$(git status --untracked-files=no --porcelain)" ]]; then
