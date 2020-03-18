@@ -1,7 +1,7 @@
 # lncm/berkeleydb
 
 [![](https://github.com/lncm/docker-berkeleydb/workflows/Build%20%26%20deploy%20on%20git%20tag%20push/badge.svg)][gh-actions]
-[![](https://img.shields.io/microbadger/image-size/lncm/berkeleydb/db-4.8.30.NC.svg?style=flat)][docker-hub]
+[![](https://img.shields.io/microbadger/image-size/lncm/berkeleydb.svg?style=flat)][docker-hub]
 [![](https://img.shields.io/docker/pulls/lncm/berkeleydb.svg?style=flat)][docker-hub]
 
 [gh-actions]: https://github.com/lncm/docker-berkeleydb/actions
@@ -23,7 +23,7 @@ Images here are built for three architectures: `amd64`, `arm32v7` , and `aarch64
 Pulling this image directly is only useful if you know exactly what you need it for, can be achieved with:
 
 ```bash
-docker pull lncm/berkeleydb:db-4.8.30.NC
+docker pull lncm/berkeleydb:v4.8.30.NC
 ```
 
 > **NOTE:** architecture is chosen automatically based on the CPU of the Docker host.
@@ -33,9 +33,9 @@ docker pull lncm/berkeleydb:db-4.8.30.NC
 To manually specify the architecture, use one of the commands below.
 
 ```bash
-docker pull lncm/berkeleydb:db-4.8.30.NC-amd64
-docker pull lncm/berkeleydb:db-4.8.30.NC-arm64v8
-docker pull lncm/berkeleydb:db-4.8.30.NC-arm32v7
+docker pull lncm/berkeleydb:v4.8.30.NC-amd64
+docker pull lncm/berkeleydb:v4.8.30.NC-arm32v7
+docker pull lncm/berkeleydb:v4.8.30.NC-arm64v8
 ```
 
 ## Dockerfile
@@ -47,7 +47,7 @@ To build bitcoind w/o the need to rebuild Berkeleydb, you can do:
 FROM alpine AS something
 
 # Copy all BDB relevant files to your stage
-COPY  --from=lncm/berkeleydb:db-4.8.30.NC  /opt  /opt
+COPY  --from=lncm/berkeleydb:v4.8.30.NC  /opt  /opt
 
 # …
 # continue with your instructions here 
