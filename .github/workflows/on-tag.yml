@@ -3,10 +3,10 @@ name: Build & deploy on git tag push
 env:
   APP: berkeleydb
 
-    # Capture groups within $TAG_FMT:
-    #   \1 => TAG     v4.8.30.NC+build<N>
-    #   \2 => BUILD   N
-    TAG_FMT: '^refs/tags/(v4\.8\.30\.NC\+build([0-9]+))$'
+  # Capture groups within $TAG_FMT:
+  #   \1 => TAG     v4.8.30.NC+build<N>
+  #   \2 => BUILD   N
+  TAG_FMT: '^refs/tags/(v4\.8\.30\.NC\+build([0-9]+))$'
 
 on:
   push:
